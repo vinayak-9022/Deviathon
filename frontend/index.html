@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLITZa Research Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Greeting Section -->
+    <div class="greeting">
+      <h1>Hello, <span id="username">Vinayak</span></h1>
+      <p>What should we do today?</p>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="chat-wrapper">
+      <div class="chat-container" id="chat-container">
+        <!-- Messages will appear here -->
+      </div>
+    </div>
+
+    <!-- Search/Input Box at Bottom -->
+    <div class="search-box">
+      <input type="text" id="query" placeholder="Ask anything..." />
+      <button id="search-btn"></button>
+    </div>
+  </div>
+
+  <!-- jsPDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
