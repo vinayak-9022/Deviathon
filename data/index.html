@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLITZa - AI Financial Co-Pilot</title> 
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // PREVIOUS UI COLORS - Reverted as requested
+                        'primary': '#4ADE80', // A vibrant lime/mint green for main actions (Analyze)
+                        'secondary': '#FBBF24', // Amber/Yellow for warnings/secondary focus (like Cash Runway, Strategic Insight)
+                        'danger': '#EF4444', // Red for danger/high risk
+                        'info': '#6366F1', // Indigo for info/projected metrics
+                        'surface': '#181829', // Dark background for the main canvas/cards (matches the image's dark purple/blue)
+                        'on-surface': '#F3F4F6', // Light text color for dark surface
+                        'input-bg': '#374151', // Slightly lighter dark background for input fields
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Body background color from the first screenshot */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #110F20; /* Deep purple/blue from initial image */
+            color: #F3F4F6; /* Light text color */
+            /* Add a subtle radial gradient similar to the first image background */
+            background-image: radial-gradient(circle at 50% 0%, rgba(100, 100, 255, 0.05) 0%, rgba(17, 15, 32, 1) 45%);
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 350px; 
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Tooltip styling adjustments for dark mode */
+        .tooltip-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip-icon {
+            cursor: pointer;
+            color: #9CA3AF; 
+            transition: color 0.15s ease-in-out;
+        }
+
+        .tooltip-icon:hover {
+            color: #4ADE80; /* Primary green on hover */
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%; 
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            white-space: normal; /* Allow text wrapping in tooltip */
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* Custom chart text color for dark mode (Chart.js fix) */
+        canvas {
+            color: #F3F4F6; 
+        }
+
+        /* Gradient Text Style for BLITZa title - using the required neon colors */
+        .gradient-text-logo {
+            background-image: linear-gradient(to right, #6A0DAD, #FF69B4, #FFA500); /* Purple -> Pink -> Orange */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+    </style>
+</head>
+<body class="p-4 sm:p-8 min-h-screen">
+
+    <div class="max-w-6xl mx-auto">
+                <nav class="flex justify-between items-center py-4 mb-16">
+                <div class="flex items-center space-x-3">
+                    
+                    <img src="logo.jpg" alt="BLITZa Logo" class="w-10 h-10 object-cover rounded-full">
+                    
+                    <span class="text-4xl font-extrabold gradient-text-logo">BLITZa</span>
+                </div>
+            </nav>
+        <header class="text-left mb-10">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-on-surface mb-2">
+                The Picture of Today and Tomorrow
+            </h1>
+            <p class="text-lg text-gray-400">Actionable, Live, and Contextual Intelligence for Business Leaders.</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           
+            <div class="lg:col-span-1 bg-surface p-6 rounded-xl shadow-2xl h-fit border border-gray-700">
+                <h2 class="text-2xl font-bold mb-6 text-primary border-b border-gray-700 pb-2">Financial Input (₹)</h2>
+                
+                <form id="analysisForm" class="space-y-4">
+                    
+                    <div>
+                        <label for="domain" class="block text-sm font-medium text-gray-300">Business Domain</label>
+                        <input type="text" id="domain" name="domain" required placeholder="e.g., EdTech, SaaS" value="EdTech" class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                    </div>
+
+                    <div>
+                        <label for="business_name" class="block text-sm font-medium text-gray-300">Business Name</label>
+                        <input type="text" id="business_name" name="business_name" value="Tada" required class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                    </div>
+
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="revenue" class="block text-sm font-medium text-gray-300">Monthly Revenue (₹)</label>
+                            <input type="number" id="revenue" name="revenue" value="200000" required class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300">Monthly COGS (₹)
+                                <span class="tooltip-container">
+                                    <svg class="tooltip-icon w-4 h-4 inline-block ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                    <span class="tooltip-text">Cost of Goods Sold: Direct cost of producing the goods/services sold. (COGS)</span>
+                                </span>
+                            </label>
+                            <input type="number" id="cogs" name="cogs" value="40000" required class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300">Monthly Fixed Costs (₹)
+                                <span class="tooltip-container">
+                                    <svg class="tooltip-icon w-4 h-4 inline-block ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                    <span class="tooltip-text">Costs that do not change with sales volume (e.g., Rent, Salaries).</span>
+                                </span>
+                            </label>
+                            <input type="number" id="fixed_costs" name="fixed_costs" value="120000" required class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300">Monthly Variable Costs (₹)
+                                <span class="tooltip-container">
+                                    <svg class="tooltip-icon w-4 h-4 inline-block ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                    <span class="tooltip-text">Costs that change with sales volume (e.g., Advertising, Commissions).</span>
+                                </span>
+                            </label>
+                            <input type="number" id="variable_costs" name="variable_costs" value="39000" required class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300">Current Cash Balance (₹)
+                            <span class="tooltip-container">
+                                <svg class="tooltip-icon w-4 h-4 inline-block ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                <span class="tooltip-text">Total cash available in the bank for operations.</span>
+                            </span>
+                        </label>
+                        <input type="number" id="cash_balance" name="cash_balance" value="2500000" required class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-primary focus:border-primary">
+                    </div>
+                    
+                    
+                    <div class="pt-6 border-t border-gray-700">
+                        <h3 class="text-xl font-bold mb-4 text-info">What-If Scenario Planning (Next Month)</h3>
+                        <p class="text-sm text-gray-400 mb-4">Calculate impact based on these projected changes:</p>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label for="projected_revenue_growth_percent" class="block text-sm font-medium text-gray-300">Projected Revenue Growth (%)</label>
+                                <input type="number" id="projected_revenue_growth_percent" name="projected_revenue_growth_percent" value="10" class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-info focus:border-info">
+                            </div>
+                            
+                            <div>
+                                <label for="fixed_cost_reduction_amount" class="block text-sm font-medium text-gray-300">Fixed Cost Reduction (₹)</label>
+                                <input type="number" id="fixed_cost_reduction_amount" name="fixed_cost_reduction_amount" value="5000" class="mt-1 block w-full rounded-lg border-gray-600 bg-input-bg text-on-surface shadow-sm p-3 border focus:ring-info focus:border-info">
+                            </div>
+                        </div>
+                    </div>
+
+                    
+                    <div class="grid grid-cols-2 gap-4 pt-4">
+                        <button type="button" id="resetButton" class="w-full py-3 bg-gray-600 text-on-surface font-semibold rounded-lg shadow-md hover:bg-gray-700 transition duration-150 ease-in-out">
+                            Reset Form
+                        </button>
+                        <button type="submit" id="analyzeButton" class="w-full py-3 bg-primary text-gray-900 font-bold rounded-lg shadow-lg hover:bg-green-300 transition duration-150 ease-in-out flex items-center justify-center">
+                            <span id="buttonText">Analyze & Get AI Recommendations</span>
+                            <svg id="spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-900 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    
+                    <div class="grid grid-cols-2 gap-4 pt-2">
+                        <button type="button" id="downloadTextReportButton" onclick="downloadTextReport()" disabled class="w-full py-3 bg-gray-800 text-gray-400 font-semibold rounded-lg shadow-md hover:bg-gray-700 transition duration-150 ease-in-out disabled:opacity-50">
+                            Download Text Report (.txt)
+                        </button>
+                        <button type="button" id="downloadPdfButton" onclick="downloadChartsAsPDF()" disabled class="w-full py-3 bg-red-700 text-white font-semibold rounded-lg shadow-md hover:bg-red-800 transition duration-150 ease-in-out disabled:opacity-50">
+                            Download Charts (.pdf)
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            
+            <div class="lg:col-span-2 space-y-8">
+                
+                <div class="bg-surface p-6 rounded-xl shadow-2xl border border-gray-700">
+                    <div id="liveAlertContainer" class="mb-4 hidden"></div>
+                    
+                    <h2 class="text-2xl font-bold mb-4 text-on-surface">Current Financial Health Report for <span id="reportBusinessName">Your Business</span></h2>
+                    
+                    <div id="metricsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+                            <p class="text-sm font-medium text-gray-400">Gross Margin</p>
+                            <p id="grossMargin" class="text-lg font-bold text-primary">--</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+                            <p class="text-sm font-medium text-gray-400">Monthly Burn</p>
+                            <p id="monthlyBurn" class="text-lg font-bold text-on-surface">--</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+                            <p id="cashRunwayLabel" class="text-sm font-medium text-gray-400">Cash Runway</p>
+                            <p id="cashRunway" class="text-lg font-bold text-secondary">--</p>
+                        </div>
+                        <div class="p-4 bg-gray-800 rounded-lg shadow-inner border border-gray-700">
+                            <p class="text-sm font-medium text-gray-400">Risk Score</p>
+                            <p id="riskScore" class="text-lg font-bold text-danger">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="projectedMetricsCard" class="bg-surface p-6 rounded-xl shadow-2xl hidden border border-gray-700">
+                    <h2 class="text-2xl font-bold mb-4 text-info">Projected Financial Impact (What-If)</h2>
+                    <p class="text-sm text-gray-400 mb-4">Based on your 'What-If' scenario inputs.</p>
+
+                    <div id="projectedMetricsContainer" class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-info/10 rounded-lg shadow-inner border border-info/50">
+                            <p class="text-sm font-medium text-info">Projected Monthly Profit/Burn</p>
+                            <p id="projectedNetProfit" class="text-xl font-bold text-info">--</p>
+                        </div>
+                        <div class="p-4 bg-info/10 rounded-lg shadow-inner border border-info/50">
+                            <p class="text-sm font-medium text-info">Projected Cash Runway</p>
+                            <p id="projectedCashRunway" class="text-xl font-bold text-info">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    
+                    <div class="bg-surface p-6 rounded-xl shadow-2xl border border-gray-700">
+                        <h2 class="text-xl font-bold mb-4 text-on-surface border-b border-gray-700 pb-2">Revenue, Costs & Profit (Current)</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="financialChart"></canvas>
+                            <p id="chartInitialPrompt" class="text-center text-gray-500 mt-8">Analysis will appear here after submission.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface p-6 rounded-xl shadow-2xl border border-gray-700">
+                        <h2 class="text-xl font-bold mb-4 text-on-surface border-b border-gray-700 pb-2">Cost Breakdown (Current)</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="costBreakdownChart"></canvas>
+                            <p id="pieChartInitialPrompt" class="text-center text-gray-500 mt-8">Cost breakdown will appear here.</p>
+                        </div>
+                    </div>
+                </div>
+
+               
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+                    <div class="bg-surface p-6 rounded-xl shadow-2xl border border-gray-700">
+                        <h2 class="text-2xl font-bold mb-4 text-primary">Actionable Co-Pilot Suggestions</h2>
+                        <div id="suggestionsContainer" class="space-y-6">
+                            <p class="text-gray-400" id="initialSuggestionsPrompt">Enter your financial data and business domain above to receive customized, AI-driven recommendations.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-surface p-6 rounded-xl shadow-2xl border border-gray-700">
+                        <h2 class="text-2xl font-bold mb-4 text-secondary">Strategic Market Insight</h2>
+                        <div id="strategicInsightContainer" class="space-y-6 hidden">
+                            
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let financialChart = null; 
+        let costBreakdownChart = null; 
+
+        // --- START OF JAVASCRIPT: NO FUNCTIONALITY CHANGES HERE ---
+
+        function formatCurrency(value, decimal = true) {
+            const options = {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: decimal ? 2 : 0,
+            };
+            
+            return new Intl.NumberFormat('en-IN', options).format(value);
+        }
+        
+       
+        
+        function getBusinessName() {
+            return document.getElementById('business_name').value.replace(/\s/g, '_') || 'Financial_Report';
+        }
+
+        
+        function downloadTextReport() {
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            const insightContainer = document.getElementById('strategicInsightContainer');
+            const businessName = getBusinessName();
+
+            if (suggestionsContainer.querySelector('#initialSuggestionsPrompt') && suggestionsContainer.querySelector('#initialSuggestionsPrompt').textContent.includes('Enter your financial data')) {
+                
+                showToast("Please run the analysis first before downloading the report.", 'danger');
+                return;
+            }
+
+            let reportText = `--- AI Analyst Financial & Strategic Report for ${businessName.replace(/_/g, ' ')} ---\n\n`;
+
+            
+            const currentMetrics = document.getElementById('metricsContainer').querySelectorAll('.p-4');
+            reportText += "--- Current Financial Health ---\n";
+            currentMetrics.forEach(div => {
+                const label = div.querySelector('p:first-child').textContent.trim();
+                const value = div.querySelector('p:last-child').textContent.trim();
+                reportText += `${label}: ${value}\n`;
+            });
+            reportText += "\n";
+
+            const projectedMetricsCard = document.getElementById('projectedMetricsCard');
+            if (!projectedMetricsCard.classList.contains('hidden')) {
+                reportText += "--- Projected Financial Impact ---\n";
+                const projectedMetrics = projectedMetricsCard.querySelectorAll('.p-4');
+                projectedMetrics.forEach(div => {
+                    const label = div.querySelector('p:first-child').textContent.trim();
+                    const value = div.querySelector('p:last-child').textContent.trim();
+                    reportText += `${label}: ${value}\n`;
+                });
+                reportText += "\n";
+            }
+            
+           
+            reportText += "--- 💡 Actionable Co-Pilot Suggestions ---\n\n";
+            const suggestions = suggestionsContainer.querySelectorAll('.p-4');
+            suggestions.forEach(div => {
+                const title = div.querySelector('h3').textContent.trim();
+                const description = div.querySelector('.text-sm').textContent.trim();
+                const impact = div.querySelector('.text-secondary').textContent.trim();
+                reportText += `${title}\nDescription: ${description}\nExpected Impact: ${impact}\n\n`;
+            });
+            reportText += "\n";
+
+           
+            reportText += "--- 🌍 Strategic Market Insight ---\n\n";
+            const insights = insightContainer.querySelectorAll('.border-l-4');
+            if (insights.length > 0) {
+                insights.forEach(div => {
+                    const title = div.querySelector('h3').textContent.trim();
+                    const content = div.querySelector('p').textContent.trim();
+                    reportText += `${title}:\n${content}\n\n`;
+                });
+            } else {
+                 reportText += "No specific strategic market insights generated.\n\n";
+            }
+
+
+            
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${businessName}_AI_Report.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showToast("Text Report downloaded successfully!", 'primary');
+        }
+
+        
+        function downloadChartsAsPDF() {
+            if (!financialChart || !costBreakdownChart) {
+                
+                showToast("Please generate the charts first by running the analysis.", 'danger');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const businessName = getBusinessName();
+            const doc = new jsPDF('p', 'mm', 'a4'); 
+
+            const width = doc.internal.pageSize.getWidth();
+            const height = doc.internal.pageSize.getHeight();
+            const margin = 10;
+            const chartWidth = width - 2 * margin; 
+
+           
+            doc.setFontSize(24);
+            doc.text(`AI Financial Chart Report for ${businessName.replace(/_/g, ' ')}`, margin, 20);
+            doc.setFontSize(12);
+            doc.text(`Generated on: ${new Date().toLocaleDateString()}`, margin, 30);
+            
+            let yPos = 40;
+
+            
+            const financialChartCanvas = document.getElementById('financialChart');
+            const barChartDataURL = financialChartCanvas.toDataURL('image/png', 1.0);
+            
+            const barChartHeight = (financialChartCanvas.height / financialChartCanvas.width) * chartWidth;
+            
+            doc.setFontSize(16);
+            doc.text('1. Revenue, Costs & Profit', margin, yPos + 10);
+            doc.addImage(barChartDataURL, 'PNG', margin, yPos + 15, chartWidth, barChartHeight);
+            
+            yPos += barChartHeight + 30; 
+
+            
+            const costBreakdownCanvas = document.getElementById('costBreakdownChart');
+            const pieChartDataURL = costBreakdownCanvas.toDataURL('image/png', 1.0);
+            
+            const pieChartHeight = (costBreakdownCanvas.height / costBreakdownCanvas.width) * chartWidth;
+
+            if (yPos + pieChartHeight + 20 > height) {
+                doc.addPage();
+                yPos = 10;
+            }
+            
+            doc.setFontSize(16);
+            doc.text('2. Cost Breakdown', margin, yPos + 10);
+            doc.addImage(pieChartDataURL, 'PNG', margin, yPos + 15, chartWidth, pieChartHeight * 0.7); // Pie charts look better slightly smaller
+
+          
+            doc.save(`${businessName}_Charts_Report.pdf`);
+            showToast("Charts downloaded successfully as PDF!", 'primary');
+        }
+        
+        
+        function showToast(message, type) {
+            const container = document.getElementById('liveAlertContainer');
+            let colorClass = '';
+            if (type === 'primary') { colorClass = 'bg-primary/10 text-primary'; icon = '✅'; }
+            else if (type === 'danger') { colorClass = 'bg-danger/10 text-danger'; icon = '❌'; }
+            else if (type === 'info') { colorClass = 'bg-info/10 text-info'; icon = 'ℹ️'; }
+
+            container.innerHTML = `<p class="p-3 ${colorClass} rounded-lg font-medium">${icon} ${message}</p>`;
+            container.classList.remove('hidden');
+
+            setTimeout(() => {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+            }, 3000);
+        }
+
+
+        function renderBarChart(revenue, totalCosts, netProfit) {
+            const ctx = document.getElementById('financialChart').getContext('2d');
+            document.getElementById('chartInitialPrompt').style.display = 'none';
+
+            if (financialChart) {
+                financialChart.destroy();
+            }
+
+            const profitColor = netProfit >= 0 ? '#4ADE80' : '#EF4444'; // Primary Green / Danger Red
+            const costColor = '#FBBF24'; // Secondary Amber/Yellow
+            const revenueColor = '#6366F1'; // Info Indigo
+
+
+            financialChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Monthly Financials'],
+                    datasets: [
+                        {
+                            label: 'Revenue (₹)',
+                            data: [revenue],
+                            backgroundColor: revenueColor, 
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Total Costs (₹)',
+                            data: [totalCosts],
+                            backgroundColor: costColor, 
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Net Profit/Loss (₹)',
+                            data: [netProfit],
+                            backgroundColor: profitColor,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount (₹)',
+                                color: '#F3F4F6' // Text color for dark mode
+                            },
+                            ticks: {
+                                callback: function(value) { return formatCurrency(value, false); },
+                                color: '#D1D5DB' // Ticks color
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)' // Grid color for dark mode
+                            }
+                        },
+                        x: {
+                            display: false
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                color: '#F3F4F6' // Legend text color
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderCostBreakdownChart(cogs, fixedCosts, variableCosts) {
+            const ctx = document.getElementById('costBreakdownChart').getContext('2d');
+            document.getElementById('pieChartInitialPrompt').style.display = 'none';
+
+            if (costBreakdownChart) {
+                costBreakdownChart.destroy();
+            }
+
+            costBreakdownChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['COGS', 'Fixed Costs', 'Variable Costs'],
+                    datasets: [{
+                        label: 'Cost Allocation',
+                        data: [cogs, fixedCosts, variableCosts],
+                        backgroundColor: [
+                            '#EF4444', // Danger Red
+                            '#FBBF24', // Secondary Amber/Yellow
+                            '#6366F1'  // Info Indigo
+                        ],
+                        hoverOffset: 16,
+                        borderWidth: 4, 
+                        borderColor: '#110F20' // Body background color for cut-out effect
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                color: '#F3F4F6' // Legend text color
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += formatCurrency(context.parsed, false);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+       
+        
+        function renderFinancialMetrics(metrics, businessName) {
+            document.getElementById('reportBusinessName').textContent = businessName;
+            document.getElementById('grossMargin').textContent = `${metrics.gross_margin.toFixed(1)}%`;
+            document.getElementById('monthlyBurn').textContent = metrics.monthly_burn > 0 ? formatCurrency(metrics.monthly_burn, false) : '₹0 (Profitable)';
+            
+            const cashRunwayText = metrics.cash_runway === Infinity ? 'Infinite (Profitable)' : `${metrics.cash_runway.toFixed(1)} Months`;
+            document.getElementById('cashRunway').textContent = cashRunwayText;
+            document.getElementById('cashRunway').className = `text-lg font-bold ${metrics.cash_runway < 6 && metrics.cash_runway !== Infinity ? 'text-danger' : 'text-primary'}`;
+
+            document.getElementById('riskScore').textContent = metrics.risk_score;
+            document.getElementById('riskScore').className = `text-lg font-bold ${metrics.risk_score.includes('High') ? 'text-danger' : metrics.risk_score.includes('Medium') ? 'text-secondary' : 'text-primary'}`;
+        }
+
+        function renderProjectedMetrics(projectedMetrics) {
+            document.getElementById('projectedMetricsCard').classList.remove('hidden');
+
+            const profit = projectedMetrics.projected_net_profit;
+            const runway = projectedMetrics.projected_cash_runway;
+            
+            const profitText = profit >= 0 ? formatCurrency(profit, false) + ' (Profit)' : formatCurrency(Math.abs(profit), false) + ' (Burn)';
+            const runwayText = runway === Infinity ? 'Infinite (Profitable)' : `${runway.toFixed(1)} Months`;
+
+            document.getElementById('projectedNetProfit').textContent = profitText;
+            document.getElementById('projectedCashRunway').textContent = runwayText;
+        }
+
+        function renderLiveAlert(alert) {
+            const container = document.getElementById('liveAlertContainer');
+            let colorClass = '';
+            if (alert.type === 'primary') colorClass = 'bg-primary/10 text-primary border border-primary/50';
+            else if (alert.type === 'danger') colorClass = 'bg-danger/10 text-danger border border-danger/50';
+            
+            container.innerHTML = `<p class="p-3 ${colorClass} rounded-lg font-bold">${alert.message.replace(/\*\*/g, '<span>').replace(/<span>/g, '</span>')}</p>`;
+            container.classList.remove('hidden');
+
+            setTimeout(() => {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+            }, 3000);
+        }
+
+        function renderRecommendations(suggestions) {
+            const container = document.getElementById('suggestionsContainer');
+            container.innerHTML = suggestions.map(s => `
+                <div class="p-4 bg-gray-800 rounded-lg border-l-4 border-primary shadow-sm border border-gray-700">
+                    <h3 class="text-lg font-semibold text-on-surface mb-1">${s.title}</h3>
+                    <p class="text-sm text-gray-400 mb-2">${s.description}</p>
+                    <p class="text-sm font-bold text-secondary">${s.impact}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderStrategicInsights(insights) {
+            const container = document.getElementById('strategicInsightContainer');
+            container.innerHTML = insights.map(i => {
+                const color = i.type === 'success' ? 'border-primary bg-primary/10' : 'border-secondary bg-secondary/10'; // Using secondary for strategic insight alerts
+                return `
+                    <div class="p-4 rounded-lg border-l-4 ${color} shadow-sm border border-gray-700">
+                        <h3 class="text-lg font-semibold text-on-surface mb-1">${i.title}</h3>
+                        <p class="text-sm text-gray-400">${i.content}</p>
+                    </div>
+                `;
+            }).join('');
+            container.classList.remove('hidden');
+        }
+
+        
+        
+        document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const button = document.getElementById('analyzeButton');
+            const buttonText = document.getElementById('buttonText');
+            const spinner = document.getElementById('spinner');
+            const initialPrompt = document.getElementById('initialSuggestionsPrompt');
+            const domainInput = document.getElementById('domain').value;
+            const downloadTextBtn = document.getElementById('downloadTextReportButton');
+            const downloadPdfBtn = document.getElementById('downloadPdfButton');
+
+            
+            
+            downloadTextBtn.disabled = true;
+            downloadPdfBtn.disabled = true;
+
+            
+            document.getElementById('chartInitialPrompt').style.display = 'block';
+            document.getElementById('pieChartInitialPrompt').style.display = 'block';
+            document.getElementById('chartInitialPrompt').textContent = 'Chart data is loading...';
+            document.getElementById('pieChartInitialPrompt').textContent = 'Chart data is loading...';
+
+
+            // Show loading state
+            button.disabled = true;
+            button.classList.add('opacity-70');
+            buttonText.textContent = `Analyzing "${domainInput}"... (Waiting for AI Strategy)`;
+            spinner.classList.remove('hidden');
+            document.getElementById('suggestionsContainer').innerHTML = `<p class="p-4 bg-info/10 text-info border border-info/50 rounded-lg" id="initialSuggestionsPrompt">Running **deep strategic analysis** on **${domainInput}**. This takes time because the AI is generating structured insights. **Please wait...**</p>`;
+
+            // 1. Collect CURRENT and PROJECTED data
+            const formData = new FormData(e.target);
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                data[key] = key === 'business_name' || key === 'domain' ? value : parseFloat(value) || 0; // Ensure numbers are parsed or default to 0
+            }
+
+            // 2. Calculate Current Metrics
+            const currentRevenue = data.revenue;
+            const currentCOGS = data.cogs;
+            const currentFixedCosts = data.fixed_costs;
+            const currentVariableCosts = data.variable_costs;
+            const cashBalance = data.cash_balance;
+
+            const currentTotalCosts = currentCOGS + currentFixedCosts + currentVariableCosts;
+            const currentNetProfit = currentRevenue - currentTotalCosts;
+            const currentBurn = Math.max(0, -currentNetProfit);
+            const currentRunway = currentBurn > 0 ? cashBalance / currentBurn : Infinity;
+            const currentGrossMargin = ((currentRevenue - currentCOGS) / currentRevenue) * 100;
+            const riskScore = currentRunway < 3 ? 'High (Runway < 3m)' : (currentRunway < 6 ? 'Medium' : 'Low');
+
+
+            // 3. Calculate Projected Metrics based on What-If scenario inputs
+            const projectedRevenue = currentRevenue * (1 + data.projected_revenue_growth_percent / 100);
+            const projectedFixedCosts = Math.max(0, currentFixedCosts - data.fixed_cost_reduction_amount);
+            
+            // Assuming COGS and Variable Costs scale linearly with revenue growth for projection (simplification)
+            const projectedCOGS = currentCOGS * (projectedRevenue / currentRevenue);
+            const projectedVariableCosts = currentVariableCosts * (projectedRevenue / currentRevenue);
+
+            const projectedTotalCosts = projectedCOGS + projectedFixedCosts + projectedVariableCosts;
+            const projectedNetProfit = projectedRevenue - projectedTotalCosts;
+
+            const projectedBurn = Math.max(0, -projectedNetProfit);
+            const projectedRunway = projectedBurn > 0 ? cashBalance / projectedBurn : Infinity;
+
+            const projectedMetrics = {
+                projected_net_profit: projectedNetProfit,
+                projected_cash_runway: projectedRunway,
+            };
+
+            // 4. --- MOCK AI API CALL SIMULATION ---
+            try {
+                // Simulate API latency
+                await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+                const MOCK_AI_RESPONSE = {
+                    metrics: {
+                        gross_margin: currentGrossMargin,
+                        monthly_burn: currentBurn,
+                        cash_runway: currentRunway,
+                        risk_score: riskScore,
+                    },
+                    live_alert: {
+                        message: `Current Cash Runway is **${currentRunway.toFixed(1)} months** (₹${formatCurrency(cashBalance, false)} cash balance / ₹${formatCurrency(currentBurn, false)} burn). Immediate focus on cash conservation is necessary if it's less than 6 months.`,
+                        type: currentRunway < 6 && currentRunway !== Infinity ? 'danger' : 'primary'
+                    },
+                    actionable_suggestions: [
+                        {
+                            title: `Optimize COGS in ${data.domain}`,
+                            description: `Review your supply chain/delivery costs for a ${data.domain} business. Aim to reduce COGS by 5% through vendor negotiation.`,
+                            impact: 'Potential Annual Savings: ' + formatCurrency(currentCOGS * 0.05 * 12, false),
+                        },
+                        {
+                            title: `Re-evaluate Fixed Cost Redundancies`,
+                            description: `Your fixed costs are high relative to revenue (approx. ${((currentFixedCosts / currentRevenue) * 100).toFixed(1)}%). Focus on reducing the ${formatCurrency(currentFixedCosts, false)} monthly burden, targeting non-essential software or office space.`,
+                            impact: 'Improved Net Profit by: ' + formatCurrency(currentFixedCosts * 0.05, false) + ' / month',
+                        }
+                    ],
+                    strategic_insight: [
+                        {
+                            title: `Competitive Pricing Analysis (${data.domain})`,
+                            content: `The ${data.domain} sector is showing strong growth, but pricing pressure is rising. Consider premium tier offerings to increase Average Revenue Per User (ARPU) while maintaining competitive entry-level pricing.`,
+                            type: 'warning'
+                        },
+                        {
+                            title: `Geographic Expansion Opportunity`,
+                            content: `Based on current market trends, expanding into Tier-2 cities could offer a 20% lower customer acquisition cost compared to metro areas. Prioritize regions with high internet penetration and less competition.`,
+                            type: 'success'
+                        }
+                    ],
+                };
+                
+                const result = MOCK_AI_RESPONSE;
+                
+                // 5. Render all data (Current Metrics from API, Projected Metrics calculated in JS)
+                renderFinancialMetrics(result.metrics, data.business_name);
+                renderProjectedMetrics(projectedMetrics);
+                renderRecommendations(result.actionable_suggestions);
+                renderStrategicInsights(result.strategic_insight);
+                renderLiveAlert(result.live_alert);
+                
+                // 6. Render Charts
+                renderBarChart(currentRevenue, currentTotalCosts, currentNetProfit); 
+                renderCostBreakdownChart(currentCOGS, currentFixedCosts, currentVariableCosts);
+                
+                // Enable download buttons after successful analysis
+                downloadTextBtn.disabled = false;
+                downloadPdfBtn.disabled = false;
+                showToast("Analysis complete! Review the charts and AI insights below.", 'primary');
+
+            } catch (error) {
+                console.error("Analysis Failed:", error);
+                const container = document.getElementById('suggestionsContainer');
+                container.innerHTML = `<p class="p-4 bg-danger/10 text-danger border border-danger/50 rounded-lg">Error: ${error.message || 'Unknown error during analysis.'}. Please check the console.</p>`;
+                showToast("Analysis Failed. See console for error details.", 'danger');
+            } finally {
+                // Hide loading state
+                button.disabled = false;
+                button.classList.remove('opacity-70');
+                buttonText.textContent = 'Analyze & Get AI Recommendations';
+                spinner.classList.add('hidden');
+            }
+        });
+
+        // Reset Button Logic (COMPLETED)
+        document.getElementById('resetButton').addEventListener('click', function() {
+            document.getElementById('analysisForm').reset();
+            
+            const defaultPrompt = 'Enter your financial data and business domain above to receive customized, AI-driven recommendations.';
+
+            document.getElementById('suggestionsContainer').innerHTML = `<p class="text-gray-400" id="initialSuggestionsPrompt">${defaultPrompt}</p>`;
+            document.getElementById('liveAlertContainer').classList.add('hidden');
+            document.getElementById('strategicInsightContainer').classList.add('hidden');
+            document.getElementById('projectedMetricsCard').classList.add('hidden');
+            
+            // Disable download buttons
+            document.getElementById('downloadTextReportButton').disabled = true;
+            document.getElementById('downloadPdfButton').disabled = true;
+
+            // Reset metric displays
+            document.getElementById('reportBusinessName').textContent = document.getElementById('business_name').value || 'Your Business';
+            document.getElementById('grossMargin').textContent = '--';
+            document.getElementById('monthlyBurn').textContent = '--';
+            document.getElementById('cashRunway').textContent = '--';
+            document.getElementById('riskScore').textContent = '--';
+
+
+            // Reset Chart Prompts and destroy charts
+            document.getElementById('chartInitialPrompt').style.display = 'block';
+            document.getElementById('pieChartInitialPrompt').style.display = 'block';
+            document.getElementById('chartInitialPrompt').textContent = 'Analysis will appear here after submission.';
+            document.getElementById('pieChartInitialPrompt').textContent = 'Cost breakdown will appear here.';
+            
+            if (financialChart) { financialChart.destroy(); financialChart = null; }
+            if (costBreakdownChart) { costBreakdownChart.destroy(); costBreakdownChart = null; }
+
+        });
+
+        // Initialize default metrics
+        document.addEventListener('DOMContentLoaded', () => {
+             document.getElementById('reportBusinessName').textContent = document.getElementById('business_name').value || 'Your Business';
+             // Optional: document.getElementById('analysisForm').dispatchEvent(new Event('submit')); 
+        });
+
+    </script>
+</body>
+</html>
