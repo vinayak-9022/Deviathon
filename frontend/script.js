@@ -1,6 +1,4 @@
-
 let loggedInUserName = "Welcome to Blitza";
-
 
 function speakText(text) {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -19,16 +17,13 @@ function welcome() {
 window.addEventListener("click", welcome);
 window.addEventListener("keydown", welcome);
 
-
 const chatContainer = document.querySelector(".chat-container"); 
-
-
 
 function parseGeminiOutput(text) {
     const sections = { summary: "", insights: [], business: "" };
-    const summary = text.match(/\*\*Summary:\*\*\s*(.*?)(?=\*\*Key Insights:|$)/is);
-    const insights = text.match(/\*\*Key Insights:\*\*\s*(.*?)(?=\*\*Business Relevance:|$)/is);
-    const business = text.match(/\*\*Business Relevance:\*\*\s*(.*)/is);
+    const summary = text.match(/Summary:\s(.*?)(?=Key Insights:|Business Relevance:|$)/is);
+    const insights = text.match(/Key Insights:\s(.*?)(?=Business Relevance:|$)/is);
+    const business = text.match(/Business Relevance:\s(.*)/is);
 
     sections.summary = summary ? summary[1].trim() : text;
     sections.business = business ? business[1].trim() : "";
@@ -42,13 +37,11 @@ function parseGeminiOutput(text) {
     return sections;
 }
 
-
 function addMessage(text, isUser = false, query = "", sections = {}) {
     const msg = document.createElement("div");
     msg.className = "message " + (isUser ? "user-message" : "ai-message");
     msg.innerHTML = text;
 
-    
     if (!isUser && query && sections.summary) {
         const pdfBtn = document.createElement("button");
         pdfBtn.className = "pdf-btn";
@@ -58,30 +51,22 @@ function addMessage(text, isUser = false, query = "", sections = {}) {
     }
 
     chatContainer.appendChild(msg);
-    
-    
     msg.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
-
 
 function addTyping() {
     const typing = document.createElement("div");
     typing.className = "message ai-message";
     typing.innerHTML = `<span class="typing"></span><span class="typing"></span><span class="typing"></span>`;
     chatContainer.appendChild(typing);
-    
-    
     typing.scrollIntoView({ behavior: 'smooth', block: 'end' });
-
     return typing;
 }
-
 
 async function generateInsights() {
     const queryInput = document.getElementById("query");
     const query = queryInput.value.trim();
     if (!query) {
-        
         addMessage("Please enter a topic.", false); 
         return;
     }
@@ -104,7 +89,6 @@ async function generateInsights() {
 
         typing.remove();
 
-        
         let output = "";
         if (sections.summary) output += `<b>Summary:</b> ${sections.summary}<br>`;
         if (sections.insights.length)
@@ -115,13 +99,22 @@ async function generateInsights() {
 
         addMessage(output, false, query, sections);
 
+        // Optional: show top web references if available
+        if (data.webResults?.length) {
+            let webOutput = "<b>Top Web References:</b><ul>";
+            data.webResults.slice(0, 3).forEach(item => {
+                webOutput += `<li><a href="${item.link || item.url}" target="_blank">${item.title}</a></li>`;
+            });
+            webOutput += "</ul>";
+            addMessage(webOutput, false);
+        }
+
     } catch (error) {
         typing.remove();
-        addMessage("⚠️ Error fetching AI response.", false);
+        addMessage("⚠ Error fetching AI response.", false);
         console.error(error);
     }
 }
-
 
 function downloadPDF(query, sections) {
     const { jsPDF } = window.jspdf;
@@ -154,7 +147,7 @@ function downloadPDF(query, sections) {
     doc.save(`${query}-summary.pdf`);
 }
 
-
+// Event listeners
 document.getElementById("search-btn").addEventListener("click", generateInsights);
 document.getElementById("query").addEventListener("keydown", e => {
     if (e.key === "Enter") generateInsights();
