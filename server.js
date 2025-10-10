@@ -1,7 +1,4 @@
 
-
-
-
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -11,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const GEMINI_API_KEY = "AIzaSyD8tAQnuxjsjd5AL2yEQMRVsH4GUuDXRvA"; // Replace with your actual key
+const GEMINI_API_KEY = "AIzaSyD8tAQnuxjsjd5AL2yEQMRVsH4GUuDXRvA"; 
 
 app.post("/api/research", async (req, res) => {
   const { query } = req.body;
