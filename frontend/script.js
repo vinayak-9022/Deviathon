@@ -1,7 +1,7 @@
-// Set username
-document.getElementById("username").innerText = "Vinayak";
 
-// Welcome speech
+let loggedInUserName = "Welcome to Blitza";
+
+
 function speakText(text) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-IN";
@@ -19,12 +19,11 @@ function welcome() {
 window.addEventListener("click", welcome);
 window.addEventListener("keydown", welcome);
 
-// FIX 1: Correctly reference the existing chat container element
-// IMPORTANT: Ensure your HTML div has id="chat-container"
+
 const chatContainer = document.querySelector(".chat-container"); 
 
 
-// Parse Gemini response
+
 function parseGeminiOutput(text) {
     const sections = { summary: "", insights: [], business: "" };
     const summary = text.match(/\*\*Summary:\*\*\s*(.*?)(?=\*\*Key Insights:|$)/is);
@@ -43,13 +42,13 @@ function parseGeminiOutput(text) {
     return sections;
 }
 
-// Add message to chat
+
 function addMessage(text, isUser = false, query = "", sections = {}) {
     const msg = document.createElement("div");
     msg.className = "message " + (isUser ? "user-message" : "ai-message");
     msg.innerHTML = text;
 
-    // Add PDF button under AI message only
+    
     if (!isUser && query && sections.summary) {
         const pdfBtn = document.createElement("button");
         pdfBtn.className = "pdf-btn";
@@ -60,30 +59,29 @@ function addMessage(text, isUser = false, query = "", sections = {}) {
 
     chatContainer.appendChild(msg);
     
-    // FIX: Use scrollIntoView on the new message element itself.
-    // 'block: end' ensures the bottom of the element is aligned with the bottom of the view.
+    
     msg.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
-// Typing animation
+
 function addTyping() {
     const typing = document.createElement("div");
     typing.className = "message ai-message";
     typing.innerHTML = `<span class="typing"></span><span class="typing"></span><span class="typing"></span>`;
     chatContainer.appendChild(typing);
     
-    // FIX: Use scrollIntoView on the typing indicator.
+    
     typing.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
     return typing;
 }
 
-// Handle AI query
+
 async function generateInsights() {
     const queryInput = document.getElementById("query");
     const query = queryInput.value.trim();
     if (!query) {
-        // This will now correctly scroll the "Please enter a topic" message into view
+        
         addMessage("Please enter a topic.", false); 
         return;
     }
@@ -106,7 +104,7 @@ async function generateInsights() {
 
         typing.remove();
 
-        // Combine sections for chat output
+        
         let output = "";
         if (sections.summary) output += `<b>Summary:</b> ${sections.summary}<br>`;
         if (sections.insights.length)
@@ -124,7 +122,7 @@ async function generateInsights() {
     }
 }
 
-// PDF generator
+
 function downloadPDF(query, sections) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
@@ -156,7 +154,7 @@ function downloadPDF(query, sections) {
     doc.save(`${query}-summary.pdf`);
 }
 
-// Events
+
 document.getElementById("search-btn").addEventListener("click", generateInsights);
 document.getElementById("query").addEventListener("keydown", e => {
     if (e.key === "Enter") generateInsights();
