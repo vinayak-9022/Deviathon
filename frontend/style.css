@@ -1,13 +1,13 @@
-/* ------------------- BLITZa FULL PAGE CHAT UI ------------------- */
+
 
 html, body {
-    /* FIX: Set scroll on the root elements. */
+    
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow-y: scroll; /* Enable scrolling on the whole page */
-    overflow-x: hidden; /* Prevent horizontal scroll */
-    scrollbar-width: none; /* FIX: Hides scrollbar for Firefox */
+    overflow-y: scroll; 
+    overflow-x: hidden; 
+    scrollbar-width: none; 
 }
 
 body {
@@ -16,26 +16,29 @@ body {
     color: white;
     display: flex;
     flex-direction: column;
-    /* FIX: Remove conflicting overflow-y: auto; */ 
+   
+    align-items: center; 
 }
 
-/* FIX: Hides scrollbar for WebKit (Chrome, Safari, Edge) */
+
 html::-webkit-scrollbar, body::-webkit-scrollbar {
     width: 0px;
     background: transparent;
 }
 
 
-/* Full-page container */
+
 .container {
     display: flex;
     flex-direction: column;
-    /* FIX: Use min-height so content can push the container to be taller than the viewport */
+    
+    max-width: 800px; 
+    width: 100%;
+    
     min-height: 100vh; 
-    /* REMOVED: height: 100vh; */
 }
 
-/* Greeting Section */
+
 .greeting {
     text-align: center;
     padding: 30px 20px 10px 20px;
@@ -74,32 +77,36 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     100% { transform: scale(1) rotateX(0deg); opacity: 1; }
 }
 
-/* Chat wrapper fills remaining space above input */
+
 .chat-wrapper {
-    flex: 1; /* Takes up all available space */
+    flex: 1; 
     display: flex;
     flex-direction: column;
-    /* FIX: Ensure no internal scrolling is happening */
+    
     overflow: visible; 
+    
+    padding-top: 5px; 
 }
 
-/* Chat container content */
+
 .chat-container {
     flex: 1;
-    /* FIX: Ensure no internal scrolling is happening */
+    
+    justify-content: flex-end; 
+    
+    
     overflow-y: visible; 
-    /* REMOVED: overflow-y: auto; */
     
     padding: 10px 20px;
     display: flex;
     flex-direction: column;
     gap: 12px;
     
-    /* FIX: Add space at the bottom so the last message isn't hidden by the fixed input bar */
+   
     padding-bottom: 70px; 
 }
 
-/* Messages */
+
 .message {
     padding: 12px 16px;
     border-radius: 12px;
@@ -122,7 +129,35 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     border: 1px solid rgba(142,68,173,0.5);
 }
 
-/* Typing animation */
+
+.ai-message ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin: 8px 0 0 0;
+}
+
+.ai-message li {
+    margin-bottom: 4px;
+}
+
+.ai-message b {
+    color: #30bcbf; 
+    font-weight: 700;
+    display: block;
+    margin-top: 8px;
+}
+
+.ai-message.tip-message {
+    
+    font-style: italic;
+    opacity: 0.8;
+    max-width: 90%;
+    font-size: 0.9em;
+    padding: 10px 15px;
+}
+
+
+
 .typing {
     display: inline-block;
     width: 8px;
@@ -146,9 +181,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Search box FIXED at bottom */
 .search-box {
     display: flex;
+ 
+    position: fixed; 
+    bottom: 0;
+   
+    left: 50%;
+    transform: translateX(-50%);
+    
     justify-content: center;
     align-items: center;
     padding: 10px 15px;
@@ -156,12 +197,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     flex-shrink: 0;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
     
-    /* FIX: Pin the search box to the viewport */
-    position: fixed; 
-    bottom: 0;
-    left: 0;
     width: 100%;
-    max-width: 100%; 
+    max-width: 800px; 
     z-index: 10;
 }
 
@@ -196,6 +233,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
     content: "➤";
     font-size: 20px;
     color: #1A0F3D;
+    
+    transform: translateX(1px); 
+    display: block;
 }
 
 .search-box button:hover {
@@ -204,10 +244,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar {
 }
 
 .search-box button:hover::before {
-    transform: translateX(2px);
+    transform: translateX(3px);
 }
 
-/* PDF button under AI messages */
+
 .pdf-btn {
     display: block;
     margin-top: 10px;
