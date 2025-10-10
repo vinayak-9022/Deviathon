@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -8,15 +7,17 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const GEMINI_API_KEY = "AIzaSyD8tAQnuxjsjd5AL2yEQMRVsH4GUuDXRvA"; 
+// ✅ Replace with your actual keys
+const GEMINI_API_KEY = "AIzaSyD8tAQnuxjsjd5AL2yEQMRVsH4GUuDXRvA";
+const SERPER_API_KEY = "1826cca60b8f97b52dccb495a6788d888b431359"; 
 
 app.post("/api/research", async (req, res) => {
   const { query } = req.body;
-
   if (!query) return res.status(400).json({ error: "Query is required." });
 
   try {
-    const response = await fetch(
+    // 1️⃣ Gemini AI Request
+    const geminiResp = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
@@ -39,20 +40,31 @@ Include:
       }
     );
 
-    const data = await response.json();
-    console.log("Gemini API response:", JSON.stringify(data, null, 2));
-
+    const geminiData = await geminiResp.json();
     const aiText =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No result found. Check API response structure.";
+      geminiData?.candidates?.[0]?.content?.parts?.[0]?.text || "No result from Gemini";
 
-    res.json({ result: aiText });
+    // 2️⃣ Serper API Request
+    const serperResp = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-KEY": "1826cca60b8f97b52dccb495a6788d888b431359",
+      },
+      body: JSON.stringify({ q: query }),
+    });
 
+    const serperData = await serperResp.json();
+    const webResults = serperData?.organic || [];
+
+    // ✅ Send combined response
+    res.json({ result: aiText, webResults });
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    res.status(500).json({ error: "Something went wrong with the AI API." });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Something went wrong with the AI APIs." });
   }
 });
 
+// ✅ Start the server
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
