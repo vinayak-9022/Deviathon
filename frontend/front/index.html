@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLITZa - Intelligent Agent Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the specific gradient and colors */
+        .neon-gradient-text {
+            background-image: linear-gradient(to right, #e74c3c, #8e44ad, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        /* ------------------- LIVE EFFECTS START ------------------- */
+        
+        /* 1. Subtle Animated Background - now more fluid */
+        @keyframes background-shift {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .animated-bg {
+            background-color: #1A0F3D;
+            background-image: linear-gradient(90deg, #4e4667, #31156D, #1A0F3D);
+            background-size: 200% 200%;
+            animation: background-shift 20s ease infinite alternate;
+        }
+
+        /* Smooth, merged background transition */
+        .seamless-bg-bottom {
+            background: linear-gradient(to top, #1a0f3d, #31156D);
+        }
+
+        /* 2. Image Glow Pulse */
+        @keyframes pulse-shadow {
+            0% { box-shadow: 0 0 10px #8e44ad, 0 0 25px #e74c3c; }
+            50% { box-shadow: 0 0 20px #e74c3c, 0 0 40px #8e44ad; }
+            100% { box-shadow: 0 0 10px #8e44ad, 0 0 25px #e74c3c; }
+        }
+        .image-glow {
+            animation: pulse-shadow 4s infinite alternate ease-in-out;
+        }
+        
+        /* 3. Hero Text Float */
+        @keyframes text-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .hero-text-float {
+            animation: text-float 6s ease-in-out infinite;
+        }
+
+        /* 4. Nav Link Hover Glow */
+        .nav-link:hover {
+            text-shadow: 0 0 8px rgba(231, 76, 60, 0.8), 0 0 15px rgba(142, 68, 173, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        /* 5. Description Text Fade In */
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-1 { animation: fade-in-up 0.8s ease-out 0.5s forwards; opacity: 0; }
+        .fade-in-2 { animation: fade-in-up 0.8s ease-out 0.7s forwards; opacity: 0; }
+        .fade-in-3 { animation: fade-in-up 0.8s ease-out 0.9s forwards; opacity: 0; }
+        
+        /* New: About Us Box Fade-in */
+        .about-box-fade {
+            animation: fade-in-up 1s ease-out forwards;
+        }
+        .about-box-1 { animation-delay: 0.2s; }
+        .about-box-2 { animation-delay: 0.4s; }
+        .about-box-3 { animation-delay: 0.6s; }
+
+        /* New: Box Glow */
+        .box-glow {
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        .box-glow:hover {
+            box-shadow: 0 0 20px rgba(127, 57, 245, 0.7), 0 0 40px rgba(64, 224, 208, 0.5);
+        }
+
+        /* New: Rotate effect for icon */
+        @keyframes rotate-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .rotate-on-hover:hover {
+            animation: rotate-slow 10s infinite linear;
+        }
+
+        /* ------------------- LIVE EFFECTS END ------------------- */
+
+        .cta-button {
+            background-color: #00FF80;
+            color: #1A0F3D;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .cta-button:hover {
+            background-color: #00E070;
+            transform: scale(1.05);
+        }
+        
+        html, body {
+            background-color: #1A0F3D; /* Base background color */
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+        }
+
+        .greeting h1 {
+            background-image: linear-gradient(to right, #e74c3c, #8e44ad, #3498db);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 60px;
+        }
+        
+        .search-box input {
+            width: 70%;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            background-color: #31156D;
+            color: #ffffff;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .search-box button {
+            background-color: #00FF80; 
+            color: #1A0F3D;
+            transition: background 0.3s;
+            box-shadow: 0 0 15px rgba(0, 255, 128, 0.4);
+        }
+        .report-card {
+            background-color: #31156D;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border: 1px solid #4e4667;
+            color: #ccc;
+            transition: transform 0.2s, box-shadow 0.2s;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="animated-bg font-sans text-white flex flex-col">
+
+    <header class="container mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+        <nav class="flex justify-between items-center py-4">
+            <div class="flex items-center space-x-3">
+                <img 
+                    src="logo.jpg" 
+                    alt="BLITZa Logo" 
+                    class="h-10 w-10 object-contain rounded-full shadow-lg"
+                    onerror="this.onerror=null;this.src='https://placehold.co/40x40/B640FF/ffffff?text=B';"
+                >
+                <span class="text-3xl font-bold neon-gradient-text">BLITZa</span>
+            </div>
+
+            <div class="hidden md:flex items-center space-x-10 text-lg font-medium">
+                <a href="#about-us" class="nav-link hover:text-pink-400 transition duration-150">About Us</a>
+                
+                <a href="/data/index.html" class="nav-link hover:text-pink-400 transition duration-150 flex items-center">
+                    Company Insights
+                    <svg class="w-5 h-5 ml-2 rotate-on-hover" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.425 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </a>
+                
+                <a href="login.html" class="nav-link hover:text-pink-400 transition duration-150">AI Agent</a>
+            </div>
+
+            <a href="login.html" class="cta-button flex items-center px-6 py-3 rounded-full font-semibold text-base shadow-2xl">
+                LOG IN
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+            </a>
+            
+            <button class="md:hidden text-white">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+    </header>
+
+    <main class="min-h-screen flex flex-col items-center justify-center py-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row items-center justify-between w-full">
+                <div class="lg:w-1/2 text-center lg:text-left mb-12 lg:mb-0">
+                    <h1 class="text-6xl sm:text-7xl lg:text-8xl font-extrabold leading-tight mb-6 hero-text-float fade-in-1">
+                        <span class="neon-gradient-text">BLITZa</span>
+                    </h1>
+                    <p class="text-xl sm:text-2xl text-white opacity-90 mb-6 max-w-lg lg:max-w-xl fade-in-2">
+                        An intelligent agent platform that automates web research, data analysis, and report synthesis for business professionals.
+                    </p>
+                    <p class="text-xl sm:text-2xl text-white opacity-70 mb-10 max-w-lg lg:max-w-xl fade-in-3">
+                        Go from complex questions to clear, actionable insights in minutes, not days.
+                    </p>
+                    <a href="login.html" class="cta-button flex items-center justify-center lg:justify-start mx-auto lg:mx-0 w-max px-8 py-4 rounded-full font-bold text-lg shadow-2xl shadow-[#00ff80]/50 transition duration-300 transform hover:scale-105">
+                        LOG IN
+                        <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
+                </div>
+                <div class="lg:w-1/2 flex justify-center lg:justify-center">
+                    <img 
+                        src="bpic.jpg" 
+                        alt="BLITZa AI Agent Workflow Diagram" 
+                        class="w-full max-w-sm lg:max-w-md h-auto object-contain rounded-xl shadow-2xl shadow-indigo-600/50 image-glow"
+                        onerror="this.onerror=null;this.src='https://placehold.co/400x400/1a0f3d/ffffff?text=BLITZa+Agent+Diagram';"
+                    >
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <div id="about-us" class="seamless-bg-bottom font-sans text-white flex flex-col items-center justify-center p-8 py-20">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-5xl sm:text-6xl font-extrabold neon-gradient-text mb-6">About Us</h2>
+            <p class="text-xl sm:text-2xl text-white opacity-90 mb-12 max-w-3xl mx-auto">
+                At BLITZa, we believe in the power of intelligent automation to transform how businesses operate. We're a team of innovators dedicated to building a platform that goes beyond simple AI tools, creating a true intelligent agent that can understand, execute, and deliver complex business insights with unparalleled speed and accuracy. Our mission is to empower professionals by freeing them from the tedious, time-consuming tasks of data collection and analysis, allowing them to focus on what truly matters: making strategic decisions and driving growth.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                <div class="p-6 rounded-lg bg-gray-800/50 shadow-lg border border-gray-700/50 box-glow about-box-fade about-box-1">
+                    <div class="text-2xl text-[#7f39f5] mb-4">
+                        <svg class="mx-auto w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6 0V3M9 21v-2m6 0v2M3 9h2m0 6H3m18-6h-2m0 6h2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 neon-gradient-text">Our Vision</h3>
+                    <p class="text-gray-300 text-sm">To be the leading intelligent agent platform that democratizes access to complex data and empowers businesses of all sizes to thrive in a data-driven world. We envision a future where every professional can leverage advanced AI without needing deep technical expertise.</p>
+                </div>
+                <div class="p-6 rounded-lg bg-gray-800/50 shadow-lg border border-gray-700/50 box-glow about-box-fade about-box-2">
+                    <div class="text-2xl text-[#e74c3c] mb-4">
+                        <svg class="mx-auto w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 neon-gradient-text">Our Mission</h3>
+                    <p class="text-gray-300 text-sm">To build a platform that automates the most tedious aspects of web research and data analysis, providing professionals with clear, actionable insights in minutes. Our goal is to save valuable time and resources for businesses.</p>
+                </div>
+                <div class="p-6 rounded-lg bg-gray-800/50 shadow-lg border border-gray-700/50 box-glow about-box-fade about-box-3">
+                    <div class="text-2xl text-[#40e0d0] mb-4">
+                        <svg class="mx-auto w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-7l-4 4V12m5.5-10.5l1.5 1.5M19 10a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 neon-gradient-text">Our Team</h3>
+                    <p class="text-gray-300 text-sm">We are a passionate team of engineers, data scientists, and designers committed to pushing the boundaries of AI and creating a seamless user experience. We value innovation, collaboration, and user-centric design.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

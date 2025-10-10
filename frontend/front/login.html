@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BLITZa - Login</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    .neon-gradient-text {
+        background-image: linear-gradient(to right, #e74c3c, #8e44ad, #3498db);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    @keyframes background-shift {
+        0% { background-position: 0% 50%; }
+        100% { background-position: 100% 50%; }
+    }
+
+    .animated-bg {
+        background-color: #1A0F3D;
+        background-image: linear-gradient(90deg, #4e4667, #31156D, #1A0F3D);
+        background-size: 200% 200%;
+        animation: background-shift 20s ease infinite alternate;
+    }
+
+    .login-button {
+        background-color: #00FF80;
+        color: #1A0F3D;
+        transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+    .login-button:hover {
+        background-color: #00E070;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 25px rgba(0, 255, 128, 0.5);
+    }
+
+    .themed-input {
+        background-color: #31156D;
+        border: 1px solid #4e4667;
+        color: #ffffff;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .themed-input:focus {
+        outline: none;
+        border-color: #8e44ad;
+        box-shadow: 0 0 10px rgba(142, 68, 173, 0.5);
+    }
+
+    .login-card {
+        background: rgba(30, 20, 60, 0.8);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        animation: float-in 1s ease-out forwards;
+    }
+
+    @keyframes float-in {
+        from { opacity: 0; transform: scale(0.8) translateY(50px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+</style>
+</head>
+
+<body class="animated-bg min-h-screen font-sans text-white flex items-center justify-center p-4">
+
+<div class="login-card w-full max-w-md p-8 sm:p-10 rounded-xl space-y-8">
+    <div class="flex flex-col items-center space-y-4">
+        <img src="logo.jpg" alt="BLITZa Logo" class="h-16 w-16 object-contain rounded-full"
+             onerror="this.onerror=null;this.src='https://placehold.co/64x64/B640FF/ffffff?text=B';">
+        <h1 class="text-4xl font-extrabold neon-gradient-text">BLITZa Sign In</h1>
+        <p class="text-gray-400">Access your intelligent agent platform.</p>
+    </div>
+
+    <form id="login-form" class="space-y-6">
+        <div>
+            <label for="email" class="text-sm font-medium text-gray-300 block mb-2 text-left">Email Address</label>
+            <input type="email" id="email" placeholder="you@company.com" required class="themed-input w-full p-3 rounded-lg placeholder-gray-500">
+        </div>
+
+        <div>
+            <label for="password" class="text-sm font-medium text-gray-300 block mb-2 text-left">Password</label>
+            <input type="password" id="password" placeholder="" required class="themed-input w-full p-3 rounded-lg placeholder-gray-500">
+        </div>
+
+        <div class="flex items-center justify-between text-sm">
+            <a href="#" class="text-pink-400 hover:text-pink-300 transition duration-150">Forgot Password?</a>
+            <div class="flex items-center">
+                <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-pink-400 rounded border-gray-600 bg-gray-700">
+                <label for="remember-me" class="ml-2 text-gray-400">Remember me</label>
+            </div>
+        </div>
+
+        <button type="submit" class="login-button w-full px-5 py-3 rounded-lg font-bold text-lg tracking-wider shadow-lg">
+            Sign In to BLITZa
+        </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-400">
+        Don't have an account?
+        <a href="register.html" class="font-medium text-pink-400 hover:text-pink-300 transition duration-150">Create an account</a>
+    </p>
+</div>
+
+<!-- Firebase + Login JS -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAePGpDRmz3R4UaxEeqiVTaaMsYx2s44qM",
+        authDomain: "blitza-9fa4a.firebaseapp.com",
+        projectId: "blitza-9fa4a",
+        storageBucket: "blitza-9fa4a.firebasestorage.app",
+        messagingSenderId: "818364742419",
+        appId: "1:818364742419:web:bc34d1cb20d2b6216d38e6",
+        measurementId: "G-QZ58N8V3XT"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const loginForm = document.getElementById("login-form");
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            alert("Login successful!");
+            console.log("User logged in:", userCredential.user.uid);
+            window.location.href = "/frontend/index.html"; // redirect
+        } catch (err) {
+            alert("Error: " + err.message);
+            console.error(err);
+        }
+    });
+</script>
+
+</body>
+</html>
