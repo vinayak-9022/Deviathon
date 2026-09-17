@@ -8,8 +8,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // ✅ Replace with your actual keys
-const GEMINI_API_KEY = "AIzaSyD8tAQnuxjsjd5AL2yEQMRVsH4GUuDXRvA";
-const SERPER_API_KEY = "1826cca60b8f97b52dccb495a6788d888b431359"; 
+const GEMINI_API_KEY = "your_api";
+const SERPER_API_KEY = "your_api"; 
 
 app.post("/api/research", async (req, res) => {
   const { query } = req.body;
